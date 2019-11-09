@@ -22,7 +22,6 @@ exports.readSMS = (req, res) => {
 };
 
 function getCordinates(loc){
-  /json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=YOUR_API_KEY
 
   var request = new XMLHttpRequest()
 
