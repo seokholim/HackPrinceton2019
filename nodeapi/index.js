@@ -30,8 +30,8 @@ function getCordinates(loc){
 
   request.onload = function() {
     // Begin accessing JSON data here
-    'address' : loc
-    'key' : 'AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI'
+    address : loc
+    key : 'AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI'
   }
 
   // Send request
