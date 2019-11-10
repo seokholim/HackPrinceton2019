@@ -1,3 +1,48 @@
+//Load HTTP module
+const http = require("http");
+const hostname = '127.0.0.1';
+const port = 3000;
+
+//Create HTTP server and listen on port 3000 for requests
+const server = http.createServer((req, res) => {
+
+  let buffers = [];
+
+  req.on('data', chunk => {
+    buffers.push(chunk);
+  });
+
+  req.on('end', () => {
+    //Set the response HTTP header with HTTP status and Content type
+    let obj = new Object();
+    // console.log('this is the req', req);
+    let body = JSON.parse(Buffer.concat(buffers).toString());
+    console.log(body);
+
+    let phone = body.phone;
+    let message = body.message.split(";");
+    let start_time = message[3];
+    obj.end_loc = message[2];
+    obj.start_loc = message[1];
+    let isDriver = message[0] == "D" ? true : false;
+
+    // TODO
+    obj.end_loc = getCordinates(obj.end_loc);
+    obj.start_loc = getCordinates(obj.start_loc);
+
+    res.status(200).json(JSON.stringify(obj));
+
+  });
+
+
+});
+
+//listen for request on port 3000, and as a callback function have the port listened on logged
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+
 /**
  * Responds to any HTTP request.
  *
@@ -5,38 +50,31 @@
  * @param {!express:Response} res HTTP response context.
  */
 exports.readSMS = (req, res) => {
-  let obj = new Object();
 
-  let phone = req.body.phone;
-  let message = req.body.message.split(";");
-  let start_time = message.pop();
-  obj.end_loc = message.pop();
-  obj.start_loc = message.pop();
-  let isDriver = message.pop() == "D" ? true : false;
-
-  // TODO
-  obj.end_loc = getCordinates(end_loc);
-  obj.start_loc = getCordinates(start_loc);
-
-  res.status(200).json(JSON.stringify(obj));
 };
 
 function getCordinates(loc){
+  
+  const https = require('https');
 
-  var request = new XMLHttpRequest()
+https.get('https://maps.googleapis.com/maps/api/geocode?key=AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI', (resp) => {
+  let data = '';
 
-  // Open a new connection, using the GET request on the URL endpoint
-  request.open('POST', 'https://maps.googleapis.com/maps/api/geocode', true)
+  // A chunk of data has been recieved.
+  resp.on('data', (loc) => {
+    data += loc;
+  });
 
-  request.onload = function() {
-    // Begin accessing JSON data here
-    address : loc
-    key : 'AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI'
-  }
+  // The whole response has been received. Print out the result.
+  resp.on('end', () => {
+    console.log(JSON.parse(data).explanation);
+    return data;
+  });
 
-  // Send request
-  request.send()
-  return request;
+}).on("error", (err) => {
+  console.log("Error: " + err.message);
+});
+
 }
 
 exports.ConfirmationRide = (req, res) => {
