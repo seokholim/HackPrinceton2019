@@ -1,19 +1,18 @@
 from flask import Flask, request #import main Flask class and request object
+from sqlalchemy import create_engine
 
-from flask_sqlalchemy import SQLAlchemy
-import requests, googlemaps, json, sqlalchemy, datetime, os
+import requests, googlemaps, json, datetime, os
+import datetime as dt
+import sqlalchemy as db
 
 app = Flask(__name__) #create the Flask app
 gmaps = googlemaps.Client(key='AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI')
 
-# [START gae_flex_postgres_app]
-# Environment variables are defined in app.yaml.
-print(os.environ)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:Password99@/postgres?host=/cloudsql/hackprinceton-258521:us-east1:hackprinceton' #os.environ['SQLALCHEMY_DATABASE_URI']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
+engine = create_engine("postgresql+psycopg2://postgres:Password99@/postgres?host=/cloudsql/hackprinceton-258521:us-east1:hackprinceton") #os.environ['SQLALCHEMY_DATABASE_URI']
+connection = engine.connect()
+metadata = db.MetaData()
+paths = db.Table('paths', metadata, autoload=True, autoload_with=engine)
+print(census.columns.keys())
 
 @app.route('/', methods=['GET', 'POST'])
 def ReadSMS():
@@ -35,8 +34,8 @@ def ReadSMS():
 
     start_loc = getCordinates(start_loc)
     end_loc = getCordinates(end_loc)
+    return pathCalc(phone, start_loc, end_loc, start_time, num_passengers)
 
-    return end_loc
 
 
 def getCordinates(loc):
@@ -45,8 +44,11 @@ def getCordinates(loc):
 
     return json.dumps(coordinates)
 
-def pathCalc(userid, start, end, time, seats):
-    return 'todo'
+def pathCalc(phone, start, end, time, seats):
+    aviable_paths = sqlalchemy.select([paths]).where(census.start_time > DATEADD(hour, -1, time))
+    print(aviable_paths)
+
+    return aviable_paths
 
 if __name__ == "__main__":
     app.run(debug=True)
