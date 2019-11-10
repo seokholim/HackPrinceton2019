@@ -1,0 +1,23 @@
+runtime: python
+env: flex
+entrypoint: gunicorn -b :$PORT main:app
+
+runtime_config:
+  python_version: 3
+
+#[START gae_flex_postgres_env]
+env_variables:
+    # Replace user, password, database, and instance connection name with the values obtained
+    # when configuring your Cloud SQL instance.
+    SQLALCHEMY_DATABASE_URI: >-
+      postgresql+psycopg2://postgres:Password99@/postgres?host=/cloudsql/hackprinceton-258521:us-east1:hackprinceton
+
+#[END gae_flex_postgres_env]
+
+#[START gae_flex_postgres_settings]
+# Replace project and instance with the values obtained  when configuring your
+# Cloud SQL instance.
+beta_settings:
+    cloud_sql_instances: hackprinceton-258521:us-east1:hackprinceton
+
+#[END gae_flex_postgres_settings]
