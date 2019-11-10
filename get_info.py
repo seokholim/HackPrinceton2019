@@ -33,9 +33,7 @@ def get_info(sent):
     loc_from_recorded = False
     loc_to_recorded = False
     time = []
-    prev = ''
     spot = 0
-    pre_val = 0
     time_done = True
     location_from = ''
     location_to = ''
@@ -52,50 +50,38 @@ def get_info(sent):
             loc_to_recorded = False
             current_loc = True
             time_done = True
-            print('from word')
-            
+
         if (pair[1] == 'TO'):
             loc_to_recorded = True
             loc_from_recorded = False
             current_loc = True
             time_done = True
-            print('to word')
-            
+
         if (pair[1] == 'NNP') and current_loc == True and time_done == True:
             time_done = True
             if loc_from_recorded == False and loc_to_recorded == True:
                 loc_to.append(pair[0])
-                print('from')
-                print(loc_from_recorded,loc_to_recorded)
-                
+
             elif loc_to_recorded == False and loc_from_recorded == True:            
                 loc_from.append(pair[0])
-                print('to')
-                print(loc_from_recorded,loc_to_recorded)            
-            
+
         if pair[0] == ',':
             time_done = True
-            print(pair[0])
 
         if pair[1] == 'CD' and time_done == True:
             spot = pair[0]
-            print(pair[0])
             
         if pair[0] == 'at' or pair[0] == 'on' or pair[0] == 'around':
             time.append(pair[0])
             time_done = False
-            print(pair[0])
             
         elif len(time) != 0 and time_done == False:
             time.append(pair[0])
-            print(pair[0])
             
 
     time_str = ''
     for eachtok in time:
         time_str = time_str + ' ' + eachtok
-
-    print(time_str)
     
     this_time = parse_date(time_str)
     if not (this_time):
