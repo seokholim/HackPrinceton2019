@@ -67,7 +67,7 @@ def get_info(sent):
         time_str = time_str + ' ' + eachtok
 
     this_time = parse_date(time_str)
-    timestampStr = this_time.strftime("%m-%d,%H:%M")
+    timestamp = int(this_time.timestamp())
 
     for each_tok in loc_from:
         location_from = location_from + each_tok + ' ' 
@@ -75,16 +75,16 @@ def get_info(sent):
     for each_tok in loc_to:
         location_to = location_to + each_tok + ' ' 
 
-    return location_to, location_from, timestampStr, spot
+    return location_to, location_from, timestamp, spot
 
 def main(request):
     request_json = request.get_json()
     order_sent = request_json['order']
-    location_to, location_from, timestampStr, spot = get_info(order_sent)
+    location_to, location_from, timestamp, spot = get_info(order_sent)
     return jsonify({
         'location_to': location_to,
         'location_from': location_from,
-        'timestamp': timestampStr,
+        'timestamp': timestamp,
         'spot': spot
     })
 
