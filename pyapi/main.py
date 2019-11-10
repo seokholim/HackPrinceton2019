@@ -1,9 +1,9 @@
 from flask import Flask, request #import main Flask class and request object
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
-import requests, googlemaps, json, datetime, os
-import datetime as dt
+import requests, googlemaps, json, os
 import sqlalchemy as db
+from datetime import datetime, timedelta
 
 app = Flask(__name__) #create the Flask app
 gmaps = googlemaps.Client(key='AIzaSyD255iu19fCeI7Tzsz-cWWTmkmXdfmpfOI')
@@ -12,7 +12,7 @@ engine = create_engine("postgresql+psycopg2://postgres:Password99@/postgres?host
 connection = engine.connect()
 metadata = db.MetaData()
 paths = db.Table('paths', metadata, autoload=True, autoload_with=engine)
-print(census.columns.keys())
+print(paths.columns.keys())
 
 @app.route('/', methods=['GET', 'POST'])
 def ReadSMS():
@@ -42,13 +42,22 @@ def getCordinates(loc):
     geocode_result = geocode_result = gmaps.geocode(loc)
     coordinates = geocode_result[0]["geometry"]["location"]
 
-    return json.dumps(coordinates)
+    return coordinates
 
 def pathCalc(phone, start, end, time, seats):
-    aviable_paths = sqlalchemy.select([paths]).where(census.start_time > DATEADD(hour, -1, time))
-    print(aviable_paths)
+    timesub1h = datetime.strptime(time,'%Y-%m-%d %H:%M') - timedelta(hours=1)
+    timeadd1h = datetime.strptime(time,'%Y-%m-%d %H:%M') + timedelta(hours=1)
 
-    return aviable_paths
+    QUERY = """SELECT path_id, start_log, start_lat, end_log, end_lat, start_time FROM paths WHERE start_time > :timesub1h AND start_time < :timeadd1h ORDER BY (POW((start_log-:s_lng),2) + POW((start_lat-:s_lat),2)) + (POW((end_log-:e_lng),2) + POW((end_lat-:e_lat),2)) LIMIT 1"""
+
+    ResultProxy = connection.execute(text(QUERY), timesub1h=timesub1h, timeadd1h=timeadd1h, s_lng=start['lng'], s_lat=start['lat'], e_lng=end['lng'], e_lat=end['lat'])
+
+    ResultSet = ResultProxy.fetchall()
+
+    directions_result = gmaps.directions('{' + str(start['lng']) + ',' + str(start['lat']) + '}', '{' + str(ResultSet[0][1]) + ',' + str(ResultSet[0][2]) + '}' ,mode="transit",arrival_time=ResultSet[0][5])
+
+    print(str(directions_result))
+    return directions_result
 
 if __name__ == "__main__":
     app.run(debug=True)
